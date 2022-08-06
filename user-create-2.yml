@@ -1,0 +1,18 @@
+---
+  - name: user create by attached list
+    hosts: all
+    become: yes
+    vars_files: user_list.yml
+    tasks:
+      - name: to create users
+        vars:
+          password: "{{ lookup,('password','./password-{{ item.name }}.txt length=6')}}"
+        user:
+          name: "{{ item.name }}"
+          uid: "{{ item.uid }}"
+          shell: '/bin/bash'
+          comment: "{{ item.first | capitalize }}, {{ item.last | capitalize }}"
+          password: " {{ password | password_hash('sha512') }}"
+          update_password: on_create
+          state: present
+        with_items: "{{ users }}"
